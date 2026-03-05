@@ -226,7 +226,7 @@
       "texto2_fr": [
         "<a href=\"mailto:diegosanmarcos21@gmail.com\">diegosanmarcos21@gmail.com</a>"
       ],
-      "galeria": [],
+      "galeria": ["LOGO.webp"],
       "creditos_es": [],
       "creditos_en": [],
       "creditos_fr": []
@@ -331,7 +331,7 @@
       "titulo_proyecto": "Dark Roast Revelations Podcast (Vito Luis Ramos)",
       "titulo_home": "Dark Roast Revelations",
       "tipo": "identidadSonora",
-      "visible": true,
+      "visible": false,
       "mostrarImagen": false,
       "principal": [],
       "texto1_es": [],
