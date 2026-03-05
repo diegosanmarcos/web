@@ -1,0 +1,352 @@
+/* ===== FUENTES ===== */
+@font-face {
+    font-family: 'Fidelma';
+    src: url('./data/fonts/Fidelma.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Gill Sans MT Light';
+    src: url('./data/fonts/gill-sans-mt-light.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ===== PROYECTO ===== */
+
+.project-page {
+    background: #000;
+}
+
+.project-page #background-container {
+    opacity: 0.15;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.project-main {
+    max-width: 700px;
+    /* Margenes del contenedor entero respecto al viewport */
+    margin: 20dvh auto;
+    margin-left: max(5dvw, calc((100% - 700px) / 2));
+    margin-right: max(5dvw, calc((100% - 700px) / 2));
+    /* Padding interno (entre frame y contenido) */
+    padding: 10dvh 2rem;
+    /* border necesario para que border-image funcione (se aplica desde JS) */
+    border: 16px solid transparent;
+    position: relative;
+    /* Animacion de entrada */
+    animation: mainAppear 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes mainAppear {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ===== TITULO DEL PROYECTO ===== */
+.project-main .project-title-section {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.project-main .project-title-section h1 {
+    font-family: 'Fidelma', serif;
+    font-size: 3.2rem;
+    font-weight: normal;
+    color: #fff;
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+}
+
+/* ===== SECCIONES ===== */
+.project-section {
+    margin-bottom: 6rem;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
+}
+
+.project-section:nth-child(1) { animation-delay: 0s; }
+.project-section:nth-child(2) { animation-delay: 0.08s; }
+.project-section:nth-child(3) { animation-delay: 0.16s; }
+.project-section:nth-child(4) { animation-delay: 0.24s; }
+.project-section:nth-child(5) { animation-delay: 0.32s; }
+.project-section:nth-child(6) { animation-delay: 0.4s; }
+.project-section:nth-child(7) { animation-delay: 0.48s; }
+.project-section:nth-child(8) { animation-delay: 0.56s; }
+.project-section:nth-child(9) { animation-delay: 0.64s; }
+.project-section:nth-child(10) { animation-delay: 0.72s; }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-title {
+    font-family: 'Fidelma', serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 1.2rem;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    text-align: center;
+}
+
+/* ===== CONTENIDO PRINCIPAL (VIDEO/IMAGEN) ===== */
+.principal-container {
+    width: 100%;
+    overflow: hidden;
+    background: #0a0a0a;
+}
+
+.principal-container video,
+.principal-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ===== CONTENIDO DE TEXTO ===== */
+.text-content {
+    font-family: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    color: #ddd;
+    line-height: 1.85;
+    font-size: 1.05rem;
+    text-align: center;
+}
+
+/* Textos literarios: alineados a la izquierda */
+.project-page.tipo-textos .text-content {
+    text-align: left;
+}
+
+.text-content p {
+    margin-bottom: 0.8em;
+}
+
+.text-content p:last-child {
+    margin-bottom: 0;
+}
+
+.text-content strong {
+    font-family: 'Fidelma', serif;
+    display: block;
+    font-size: 1.3rem;
+    font-weight: normal;
+    color: #fff;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+    text-align: center;
+}
+
+.text-content p:first-child strong {
+    margin-top: 0;
+}
+
+.text-content a {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(255, 255, 255, 0.35);
+    transition: text-decoration-color 0.2s ease;
+}
+
+.text-content a:hover {
+    text-decoration-color: #fff;
+}
+
+/* ===== LISTA DE AUDIOS ===== */
+.audio-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    text-align: left;
+}
+
+.audio-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    padding: 0.9rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.audio-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.audio-item.playing {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.audio-icon {
+    font-size: 0.55rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.audio-name {
+    flex: 1;
+    font-family: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    color: #ccc;
+    font-size: 0.95rem;
+}
+
+/* ===== GALERIA ===== */
+.gallery-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.gallery-item {
+    width: 100%;
+    max-width: 100%;
+    transition: opacity 0.2s ease;
+}
+
+.gallery-item:hover {
+    opacity: 0.85;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* ===== CREDITOS ===== */
+.credits-content p {
+    font-family: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 0.2rem;
+    text-align: center;
+}
+
+.credits-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* ===== BOTON MENU (TRIGGER) ===== */
+.menu-trigger {
+    position: absolute;
+    left: 50%;
+    bottom: 0.9rem;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    min-width: 240px;
+    padding: 1.2rem 2.8rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Fidelma', serif;
+    font-size: 1.85rem;
+    line-height: 1;
+    font-weight: normal;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+}
+
+.menu-trigger:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* menu-overlay, menu-modal, menu-items, menu-item: defined in styles.css (shared) */
+
+/* ===== BOTON VOLVER (BARRA COMPLETA AL FINAL) ===== */
+.back-section {
+    margin-top: 3rem;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-family: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0.05em;
+    transition: background 0.15s ease;
+}
+
+.back-button:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.back-button:active {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .project-main {
+        margin: 15dvh 5dvw;
+        padding: 7dvh 1.5rem;
+    }
+
+    .project-main .project-title-section h1 {
+        font-size: 2.2rem;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+    }
+
+    .text-content {
+        font-size: 0.9rem;
+    }
+
+    .back-button {
+        height: 48px;
+    }
+
+    .menu-trigger {
+        min-width: 200px;
+        padding: 1rem 2.1rem;
+        font-size: 1.45rem;
+        bottom: 0.6rem;
+    }
+
+    /* menu-modal, menu-item, menu-items responsive: in styles.css */
+}
+
+@media (max-width: 480px) {
+    /* menu-modal responsive: in styles.css */
+
+    .back-button {
+        height: 44px;
+        font-size: 0.65rem;
+    }
+}
