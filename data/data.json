@@ -198,7 +198,7 @@
       "tipo": "about",
       "visible": true,
       "mostrarImagen": true,
-      "principal": [],
+      "principal": ["LOGO.webp"],
       "texto1_es": [
         "Diego Saint-Mard, alias Diego San Marcos, desarrolla su práctica artística en el entorno digital, explorando la creación de música electrónica, el diseño sonoro y la edición de audio.",
         "Su investigación sonora nace de una necesidad de introspección y comprensión simbólica del mundo, entendiendo el sonido como medio de contacto, percepción alterada y experiencia compartida.",
@@ -224,7 +224,7 @@
       "texto2_fr": [
         "<a href=\"mailto:diegosanmarcos21@gmail.com\">diegosanmarcos21@gmail.com</a>"
       ],
-      "galeria": ["LOGO.webp"],
+      "galeria": [],
       "creditos_es": [],
       "creditos_en": [],
       "creditos_fr": []
