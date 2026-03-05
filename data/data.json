@@ -69,9 +69,7 @@
       "tipo": "identidadSonora",
       "visible": true,
       "mostrarImagen": false,
-      "principal": [
-        "THE WISE BODY.webp"
-      ],
+      "principal": [],
       "texto1_es": [],
       "texto1_en": [],
       "texto1_fr": [],
@@ -83,7 +81,7 @@
       "texto2_es": [],
       "texto2_en": [],
       "texto2_fr": [],
-      "galeria": [],
+      "galeria": ["THE WISE BODY.webp"],
       "creditos_es": [
         "Logo sonoro e introducción musical para podcast y loop para meditación Nidra"
       ],
