@@ -10,7 +10,7 @@
     "personal": {
       "categories": ["miMusica", "textos"],
       "background": "personal.webp",
-      "frame": "frame-pkmn-modern.svg",
+      "frame": "frame-deco-04-arch.svg",
       "switchIcon": "espiral-portfolio.png",
       "tileColor": { "bg": "#781919", "text": "#fff" }
     }
