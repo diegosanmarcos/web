@@ -5,14 +5,14 @@
       "background": "portfolio.webp",
       "frame": "frame-ff-crystal.svg",
       "switchIcon": "ESPIRAL PERSONAL.png",
-      "tileColor": { "bg": "#D57926", "text": "#fff" }
+      "tileColor": { "bg": "#A45209", "text": "#fff" }
     },
     "personal": {
       "categories": ["miMusica", "textos"],
       "background": "personal.webp",
       "frame": "frame-deco-04-arch.svg",
       "switchIcon": "ESPIRAL PORTFOLIO.png",
-      "tileColor": { "bg": "#2A86D9", "text": "#fff" }
+      "tileColor": { "bg": "#0C599E", "text": "#fff" }
     }
   },
   "typeColors": {
