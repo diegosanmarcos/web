@@ -236,8 +236,7 @@
       "tipo": "audiovisual",
       "visible": true,
       "mostrarImagen": true,
-      "principal": [
-        "EXtracto alexander_1080.webm"
+      "principal": ["EXtracto alexander_1080.webm"
       ],
       "texto1_es": [],
       "texto1_en": [],
@@ -252,8 +251,7 @@
       "texto2_fr": [
         "Extrait du court métrage sur Alexandre le Grand, avec une musique originale composée pour la danse des Ménades"
       ],
-      "galeria": [
-        "PORTADA.webp"
+      "galeria": ["PORTADA.webp"        
       ],
       "creditos_es": [
         "Edición de sonido y composición de música adicional"
