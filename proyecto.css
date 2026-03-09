@@ -309,6 +309,25 @@
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* ===== STUDIO BADGE ===== */
+.studio-badge {
+    position: absolute;
+    bottom: -10dvh;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Fidelma', serif;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+}
+
+.studio-badge:hover {
+    color: rgba(255, 255, 255, 0.5);
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .project-main {

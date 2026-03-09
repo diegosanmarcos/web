@@ -16,9 +16,9 @@
     }
   },
   "typeColors": {
-    "audiovisual": "#4A4A4A",
-    "identidadSonora": "#4A4A4A",
-    "audioInmersivo": "#4A4A4A",
+    "audiovisual": "#000000",
+    "identidadSonora": "#000000",
+    "audioInmersivo": "#000000",
     "musicaMezcla": "#4A4A4A",
     "miMusica": "#4A4A4A",
     "textos": "#1C58BC",
