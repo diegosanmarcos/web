@@ -5,14 +5,14 @@
       "background": "portfolio.webp",
       "frame": "frame-ff-crystal.svg",
       "switchIcon": "ESPIRAL PERSONAL.png",
-      "tileColor": { "bg": "#8486D1", "text": "#fff" }
+      "tileColor": { "bg": "#4239E3", "text": "#fff" }
     },
     "personal": {
       "categories": ["miMusica", "textos"],
       "background": "personal.webp",
       "frame": "frame-deco-04-arch.svg",
       "switchIcon": "ESPIRAL PORTFOLIO.png",
-      "tileColor": { "bg": "#8486D1", "text": "#fff" }
+      "tileColor": { "bg": "#4239E3", "text": "#fff" }
     }
   },
   "typeColors": {
@@ -21,8 +21,8 @@
     "audioInmersivo": "#4A4A4A",
     "musicaMezcla": "#4A4A4A",
     "miMusica": "#4A4A4A",
-    "textos": "#4A4A4A",
-    "about": "#D57926"
+    "textos": "#1C58BC",
+    "about": "#965521"
   },
   "bgm": {
     "file": "./data/bgm/A Través Del Sonido.mp3",
