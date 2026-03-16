@@ -1,7 +1,7 @@
 {
   "fonts": {
-    "title": { "family": "Fidelma", "file": "Fidelma.ttf" },
-    "body": { "family": "Gill Sans MT Light", "file": "gill-sans-mt-light.ttf" }
+    "title": { "family": "Omnes", "file": "Omnes.ttf" },
+    "body": { "family": "Gill Sans MT Light", "file": "Omnes.ttf" }
   },
   "modes": {
     "portfolio": {
@@ -41,8 +41,7 @@
       "tipo": "audiovisual",
       "visible": true,
       "mostrarImagen": true,
-      "principal": [
-        "mde_baja.webm"
+      "principal": ["https://youtu.be/lao3BA7VHXk"
       ],
       "texto1_es": [],
       "texto1_en": [],
@@ -190,7 +189,7 @@
       "creditos_en": [],
       "creditos_fr": [],
       "archivosTexto": [
-        "1. El Oro del Rin, segunda escena Transformación.txt",
+        "1. TRANSFORMACIÓN.txt",
         "2. LAGOS DE CRISTAL BRILLANTE.txt",
         "3. DESPERTAR.txt"
       ]
