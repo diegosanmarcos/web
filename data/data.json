@@ -1,4 +1,8 @@
 {
+  "fonts": {
+    "title": { "family": "Fidelma", "file": "Fidelma.ttf" },
+    "body": { "family": "Gill Sans MT Light", "file": "gill-sans-mt-light.ttf" }
+  },
   "modes": {
     "portfolio": {
       "categories": ["audiovisual", "identidadSonora", "audioInmersivo", "musicaMezcla", "about"],

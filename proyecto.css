@@ -1,20 +1,3 @@
-/* ===== FUENTES ===== */
-@font-face {
-    font-family: 'Fidelma';
-    src: url('./data/fonts/Fidelma.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Gill Sans MT Light';
-    src: url('./data/fonts/gill-sans-mt-light.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
 /* ===== PROYECTO ===== */
 
 .project-page {
@@ -59,7 +42,7 @@
 }
 
 .project-main .project-title-section h1 {
-    font-family: 'Fidelma', serif;
+    font-family: var(--font-title);
     font-size: 3.2rem;
     font-weight: normal;
     color: #fff;
@@ -97,7 +80,7 @@
 }
 
 .section-title {
-    font-family: 'Fidelma', serif;
+    font-family: var(--font-title);
     font-size: 1.8rem;
     font-weight: normal;
     color: rgba(255, 255, 255, 0.6);
@@ -121,9 +104,26 @@
     display: block;
 }
 
+.principal-container .video-responsive {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+    overflow: hidden;
+}
+
+.principal-container .video-responsive iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
 /* ===== CONTENIDO DE TEXTO ===== */
 .text-content {
-    font-family: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    font-family: var(--font-body);
     color: #ddd;
     line-height: 1.85;
     font-size: 1.05rem;
@@ -144,7 +144,7 @@
 }
 
 .text-content strong {
-    font-family: 'Fidelma', serif;
+    font-family: var(--font-title);
     display: block;
     font-size: 1.3rem;
     font-weight: normal;
@@ -204,7 +204,7 @@
 
 .audio-name {
     flex: 1;
-    font-family: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    font-family: var(--font-body);
     color: #ccc;
     font-size: 0.95rem;
 }
@@ -236,7 +236,7 @@
 
 /* ===== CREDITOS ===== */
 .credits-content p {
-    font-family: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    font-family: var(--font-body);
     color: rgba(255, 255, 255, 0.35);
     font-size: 0.9rem;
     line-height: 1.6;
@@ -263,7 +263,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-family: 'Fidelma', serif;
+    font-family: var(--font-title);
     font-size: 1.85rem;
     line-height: 1;
     font-weight: normal;
@@ -292,7 +292,7 @@
     background: rgba(255, 255, 255, 0.08);
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
-    font-family: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: lowercase;
@@ -315,7 +315,7 @@
     bottom: -10dvh;
     left: 50%;
     transform: translateX(-50%);
-    font-family: 'Fidelma', serif;
+    font-family: var(--font-title);
     font-size: 0.95rem;
     color: rgba(255, 255, 255, 0.2);
     text-decoration: none;
@@ -333,6 +333,7 @@
     .project-main {
         margin: 15dvh 5dvw;
         padding: 7dvh 1.5rem;
+        padding-bottom: max(7dvh, 140px);
     }
 
     .project-main .project-title-section h1 {
