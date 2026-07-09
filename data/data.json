@@ -518,6 +518,39 @@
         "Remix électronique du Boléro de Ravel pour le concours de la plateforme Fiverr"
       ]
     },
+    { 
+      "slug": "Nel",
+      "titulo_proyecto": "Nel en el Huca (APADA)",
+      "titulo_home": "Nel en el Huca",
+      "tipo": "audiovisual",
+      "visible": true,
+      "mostrarImagen": true,
+      "principal": ["https://youtu.be/-U6r4ht1lQc?si=7UHpOwyL3fUI9Ew9"
+      ],
+      "texto1_es": [],
+      "texto1_en": [],
+      "texto1_fr": [],
+      "audio": [],
+      "texto2_es": [
+        "Sonorización de audiocuento. Cuento creado para trabajar con el alumnado de Educación Primaria las características y necesidades de las personas con discapacidad auditiva."
+      ],
+      "texto2_en": [
+        "Audiobook sonorization. Story created to work with Primary Education students on the characteristics and needs of people with hearing disabilities."
+      ],
+      "texto2_fr": [
+        "Sonorisation du conte audio. Conte créé pour travailler avec les élèves de enseignement primaire sur les caractéristiques et les besoins des personnes en situation de handicap auditif."
+      ],
+      "galeria": ["NEL PORTADA.webp"        
+      ],
+      "creditos_es": [
+        "Edición de sonido y mezcla"
+      ],
+      "creditos_en": [
+        "Sound editing and mix"
+      ],
+      "creditos_fr": [
+        "Montage sonore et mixage"
+      ]},
     {
       "slug": "conexionesfera",
       "titulo_proyecto": "Conexionesfera Records For Mind Freeing And Liberation Of The Sense Of Self",
