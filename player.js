@@ -1,5 +1,17 @@
 // ===== REPRODUCTOR DE AUDIO GLOBAL (persiste entre paginas) =====
 
+// SVG inline usados en varios puntos del player (boton principal, boton de
+// ciclo de presets, fullscreen, volumen) — definidos una unica vez aqui.
+const ICONS = {
+    play: (size = 16) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`,
+    pause: (size = 16) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>`,
+    fullscreenExpand: '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>',
+    fullscreenContract: '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>',
+    volumeHigh: () => '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0012 8.5v7a4.5 4.5 0 004.5-3.5zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>',
+    volumeLow: () => '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.5 12A4.5 4.5 0 0016 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM5 9v6h4l5 5V4L9 9H5z"/></svg>',
+    volumeMute: () => '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>'
+};
+
 const DSM_Player = {
     // Estado
     element: null,
@@ -18,6 +30,10 @@ const DSM_Player = {
     dragOffset: { x: 0, y: 0 },
     dragStartPos: { x: 0, y: 0 },
 
+    // Seek: mientras el usuario arrastra la barra de progreso, timeupdate no
+    // debe sobreescribir el valor del slider (tiron del thumb bajo el dedo)
+    isSeeking: false,
+
     // UI
     playlistOpen: false,
     volumeOpen: false,
@@ -35,48 +51,8 @@ const DSM_Player = {
     freqData: null,
     waveData: null,
 
-    // Butterchurn (Milkdrop visualizer)
-    butterchurn: null,        // modulo butterchurn (cargado dinamicamente)
-    visualizer: null,         // instancia del visualizador
-    canvasGL: null,           // canvas WebGL dedicado
-    bcPresets: null,          // objeto { key: presetData } con los presets seleccionados
-    bcPresetKeys: [],         // array de keys de presets
-    bcPresetIndex: 0,         // indice del preset actual
-    bcCycleInterval: null,    // intervalo para ciclar presets
-    bcReady: false,           // true cuando butterchurn esta listo para renderizar
-    bcRecovering: false,
-    bcRenderFailCount: 0,
-    bcRecoveryTimeout: null,
-    bcLastRecoveryAt: 0,
-
-    // Presets prioritarios — van al principio de la lista, en este orden
-    BC_PRIORITY_PRESETS: [
-        'martin - castle in the air',
-        '_Mig_085',
-        'Aderrasi - Potion of Spirits'
-    ],
-    BC_CYCLE_SECONDS: 18,     // segundos entre cambio de preset
-    BC_BLEND_SECONDS: 2.7,    // duracion del crossfade entre presets
-    bcAutoCycle: true,         // ciclo automatico activado por defecto
-    BC_RENDER_BOOST_FULLSCREEN: 1.22,
-    BC_RENDER_DPR_MAX_WINDOWED: 2,
-    BC_RENDER_DPR_MAX_FULLSCREEN: 3,
-    BC_RENDER_MAX_SIDE_WINDOWED: 3200,
-    BC_RENDER_MAX_SIDE_FULLSCREEN: 4600,
-    BC_ADAPTIVE_LOW_FPS: 45,
-    BC_ADAPTIVE_HIGH_FPS: 56,
-    BC_ADAPTIVE_MIN_SCALE: 0.62,
-    BC_ADAPTIVE_DOWNSHIFT: 0.08,
-    BC_ADAPTIVE_UPSHIFT: 0.04,
-    BC_ADAPTIVE_COOLDOWN_MS: 1200,
-    BC_ADAPTIVE_SMOOTHING: 0.12,
-    BC_RENDER_FAIL_THRESHOLD: 3,
-    BC_RECOVERY_COOLDOWN_MS: 3000,
-    BC_RECOVERY_DELAY_MS: 650,
-    renderQualityScale: 1,
-    renderFpsEma: 60,
-    renderLastFrameTs: 0,
-    renderLastAdjustTs: 0,
+    // Canvas WebGL dedicado a Butterchurn (el renderer vive en DSM_Visualizer)
+    canvasGL: null,
 
     // Ambience settings (del generador de fondos — fallback sin WebGL2)
     ambience: {
@@ -98,12 +74,17 @@ const DSM_Player = {
             document.body.appendChild(this.element);
         }
 
+        DSM_Visualizer.init(this);
         this.createPlayerDOM();
-        this.element.volume = 0.7;
+        // Volumen persistente entre visitas (localStorage), fallback 0.7
+        const savedVolume = parseFloat(localStorage.getItem('dsm_volume'));
+        this.element.volume = (!isNaN(savedVolume) && savedVolume >= 0 && savedVolume <= 1)
+            ? savedVolume
+            : 0.7;
         this.setupEvents();
         this.syncVolumeUI();
-        this.stateRestored = this.restoreStateIfPlaying();
-        this.initButterchurn(); // Carga asincrona, no bloquea
+        this.stateRestored = this.restoreState();
+        DSM_Visualizer.initButterchurn(); // Carga asincrona, no bloquea
         this.animate();
     },
 
@@ -117,10 +98,6 @@ const DSM_Player = {
             cancelAnimationFrame(this.resizeRaf);
             this.resizeRaf = 0;
         }
-        if (this.bcRecoveryTimeout) {
-            clearTimeout(this.bcRecoveryTimeout);
-            this.bcRecoveryTimeout = null;
-        }
 
         const old = document.getElementById('audio-player');
         if (old) old.remove();
@@ -133,8 +110,8 @@ const DSM_Player = {
             <canvas id="player-canvas-webgl"></canvas>
             <div class="player-overlay">
                 <div class="player-drag-handle">
-                    <button class="player-fullscreen" id="fullscreen-btn" aria-label="fullscreen"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button>
-                    <button class="player-close">&times;</button>
+                    <button class="player-fullscreen" id="fullscreen-btn" aria-label="pantalla completa">${ICONS.fullscreenExpand}</button>
+                    <button class="player-close" aria-label="cerrar reproductor">&times;</button>
                 </div>
                 <div class="player-center">
                     <div class="track-title">sin audio</div>
@@ -142,19 +119,19 @@ const DSM_Player = {
                 </div>
                 <div class="player-bottom">
                     <div class="player-progress-mini">
-                        <input type="range" id="progress-bar" min="0" max="100" value="0">
+                        <input type="range" id="progress-bar" min="0" max="100" value="0" aria-label="progreso de la pista">
                     </div>
                     <div class="player-controls">
-                        <button class="control-btn" id="playlist-btn"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M3 13h12v-2H3v2zm0-7v2h18V6H3zm0 12h18v-2H3v2z"/></svg></button>
+                        <button class="control-btn" id="playlist-btn" aria-label="mostrar playlist"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M3 13h12v-2H3v2zm0-7v2h18V6H3zm0 12h18v-2H3v2z"/></svg></button>
                         <div class="player-controls-main">
-                            <button class="control-btn" id="prev-btn"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-                            <button class="control-btn" id="play-btn"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
-                            <button class="control-btn" id="next-btn"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm10 0h2V6h-2v12z"/></svg></button>
+                            <button class="control-btn" id="prev-btn" aria-label="pista anterior"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+                            <button class="control-btn" id="play-btn" aria-label="reproducir">${ICONS.play(16)}</button>
+                            <button class="control-btn" id="next-btn" aria-label="pista siguiente"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm10 0h2V6h-2v12z"/></svg></button>
                         </div>
                         <div class="volume-control">
-                            <button class="control-btn" id="volume-btn" aria-label="volume"><svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0012 8.5v7a4.5 4.5 0 004.5-3.5zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></button>
+                            <button class="control-btn" id="volume-btn" aria-label="volumen">${ICONS.volumeHigh()}</button>
                             <div id="volume-popover" class="volume-popover hidden">
-                                <input type="range" id="volume-slider" min="0" max="100" value="70">
+                                <input type="range" id="volume-slider" min="0" max="100" value="70" aria-label="nivel de volumen">
                             </div>
                         </div>
                     </div>
@@ -167,14 +144,14 @@ const DSM_Player = {
             </div>
             <div id="playlist-panel" class="playlist-panel hidden">
                 <div class="preset-nav" id="preset-nav">
-                    <button class="preset-nav-btn" id="preset-prev-btn">&#x2039;</button>
-                    <button class="preset-cycle-btn" id="preset-cycle-btn" title="pausar ciclo" aria-label="pausar ciclo"><svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg></button>
+                    <button class="preset-nav-btn" id="preset-prev-btn" aria-label="preset anterior">&#x2039;</button>
+                    <button class="preset-cycle-btn" id="preset-cycle-btn" title="pausar ciclo" aria-label="pausar ciclo">${ICONS.pause(10)}</button>
                     <span class="preset-nav-name" id="preset-nav-name">—</span>
-                    <button class="preset-nav-btn" id="preset-next-btn">&#x203A;</button>
+                    <button class="preset-nav-btn" id="preset-next-btn" aria-label="siguiente preset">&#x203A;</button>
                 </div>
                 <div class="playlist-header">
                     <span>playlist</span>
-                    <button class="playlist-close">&times;</button>
+                    <button class="playlist-close" aria-label="cerrar playlist">&times;</button>
                 </div>
                 <div id="playlist-items" class="playlist-items"></div>
             </div>
@@ -191,16 +168,14 @@ const DSM_Player = {
             // Si el contexto WebGL se pierde, caer a canvas 2D para que la animacion no se congele.
             this.canvasGL.addEventListener('webglcontextlost', (e) => {
                 e.preventDefault();
-                this.markButterchurnUnavailable('webgl context lost');
-                this.scheduleButterchurnRecovery('webgl context lost');
+                DSM_Visualizer.markButterchurnUnavailable('webgl context lost');
+                DSM_Visualizer.scheduleButterchurnRecovery('webgl context lost');
                 console.warn('DSM_Player: WebGL context lost, usando fallback 2D');
             });
 
             this.canvasGL.addEventListener('webglcontextrestored', () => {
                 console.info('DSM_Player: WebGL context restored, reintentando Butterchurn');
-                if (this.butterchurn && this.audioCtx && this.analyser) {
-                    this.setupButterchurn();
-                }
+                DSM_Visualizer.onContextRestored();
             });
         }
 
@@ -209,8 +184,8 @@ const DSM_Player = {
             this.resizeObserver.observe(this.playerEl);
         }
 
-        this.updatePresetNavUI();
-        this.updateAutoCycleBtn();
+        DSM_Visualizer.updatePresetNavUI();
+        DSM_Visualizer.updateAutoCycleBtn();
 
         // Restaurar posicion guardada (con bounds check)
         const savedPos = sessionStorage.getItem('dsm_player_pos');
@@ -238,7 +213,9 @@ const DSM_Player = {
         document.getElementById('playlist-btn').addEventListener('click', () => this.togglePlaylist());
         document.querySelector('.player-close').addEventListener('click', () => this.close());
         document.querySelector('.playlist-close').addEventListener('click', () => this.togglePlaylist());
-        document.getElementById('progress-bar').addEventListener('input', (e) => this.seek(e));
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.addEventListener('input', (e) => this.seek(e));
+        progressBar.addEventListener('pointerdown', () => { this.isSeeking = true; });
         document.getElementById('volume-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             this.toggleVolumePopover();
@@ -247,18 +224,14 @@ const DSM_Player = {
             this.setVolume(e.target.value / 100);
         });
         document.getElementById('volume-popover').addEventListener('click', (e) => e.stopPropagation());
-        document.addEventListener('click', (e) => {
-            if (!this.volumeOpen) return;
-            if (!e.target.closest('.volume-control')) this.toggleVolumePopover(false);
-        });
 
         // Fullscreen
         document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
 
         // Preset navigation
-        document.getElementById('preset-prev-btn').addEventListener('click', () => this.prevPreset());
-        document.getElementById('preset-next-btn').addEventListener('click', () => this.nextPreset());
-        document.getElementById('preset-cycle-btn').addEventListener('click', () => this.toggleAutoCycle());
+        document.getElementById('preset-prev-btn').addEventListener('click', () => DSM_Visualizer.prevPreset());
+        document.getElementById('preset-next-btn').addEventListener('click', () => DSM_Visualizer.nextPreset());
+        document.getElementById('preset-cycle-btn').addEventListener('click', () => DSM_Visualizer.toggleAutoCycle());
 
         // Audio events
         this.element.addEventListener('timeupdate', () => this.updateProgress());
@@ -268,10 +241,6 @@ const DSM_Player = {
         // Drag — todo el player cuando controles ocultos, solo handle cuando visibles
         this.playerEl.addEventListener('mousedown', (e) => this.handlePointerDown(e));
         this.playerEl.addEventListener('touchstart', (e) => this.handlePointerDown(e), { passive: false });
-        document.addEventListener('mousemove', (e) => this.onDrag(e));
-        document.addEventListener('touchmove', (e) => this.onDrag(e), { passive: false });
-        document.addEventListener('mouseup', () => this.handlePointerUp());
-        document.addEventListener('touchend', () => this.handlePointerUp());
 
         // Hover para mostrar/ocultar controles (desktop)
         this.playerEl.addEventListener('mouseenter', () => this.showControls());
@@ -279,11 +248,31 @@ const DSM_Player = {
             if (!this.playlistOpen) this.hideControls();
         });
 
-        // Intentar desbloquear/resumir AudioContext en el primer gesto real del usuario.
-        document.addEventListener('pointerdown', () => this.ensureAudioContext(), { once: true, passive: true });
-        document.addEventListener('keydown', () => this.ensureAudioContext(), { once: true });
-        window.addEventListener('resize', () => this.scheduleRendererResize());
+        // Listeners globales en document/window: el player en si se recrea en
+        // cada createPlayerDOM(), pero document/window persisten toda la vida
+        // de la pagina. Si setupEvents() se llamara mas de una vez estos se
+        // duplicarian (cada init() sumaria otro listener). Se registran una
+        // unica vez; usan this.playerEl en el momento del evento (no una
+        // referencia capturada), asi que siguen apuntando al player vigente
+        // aunque el DOM se haya recreado despues de este primer registro.
+        if (!this._globalEventsBound) {
+            this._globalEventsBound = true;
 
+            document.addEventListener('pointerup', () => { this.isSeeking = false; });
+            document.addEventListener('click', (e) => {
+                if (!this.volumeOpen) return;
+                if (!e.target.closest('.volume-control')) this.toggleVolumePopover(false);
+            });
+            document.addEventListener('mousemove', (e) => this.onDrag(e));
+            document.addEventListener('touchmove', (e) => this.onDrag(e), { passive: false });
+            document.addEventListener('mouseup', () => this.handlePointerUp());
+            document.addEventListener('touchend', () => this.handlePointerUp());
+
+            // Intentar desbloquear/resumir AudioContext en el primer gesto real del usuario.
+            document.addEventListener('pointerdown', () => this.ensureAudioContext(), { once: true, passive: true });
+            document.addEventListener('keydown', () => this.ensureAudioContext(), { once: true });
+            window.addEventListener('resize', () => this.scheduleRendererResize());
+        }
     },
 
     // ===== POINTER HANDLING (drag + tap-to-toggle) =====
@@ -398,6 +387,7 @@ const DSM_Player = {
     setVolume(volume) {
         const nextVolume = Math.max(0, Math.min(1, volume));
         this.element.volume = nextVolume;
+        localStorage.setItem('dsm_volume', String(nextVolume));
         this.syncVolumeUI();
         this.saveState();
     },
@@ -408,9 +398,8 @@ const DSM_Player = {
         if (slider) slider.value = String(Math.round(volume * 100));
         const btn = document.getElementById('volume-btn');
         if (btn) {
-            if (volume <= 0.01) btn.textContent = '\uD83D\uDD07';
-            else if (volume < 0.5) btn.textContent = '\uD83D\uDD08';
-            else btn.textContent = '\uD83D\uDD0A';
+            const icon = volume <= 0.01 ? ICONS.volumeMute : volume < 0.5 ? ICONS.volumeLow : ICONS.volumeHigh;
+            btn.innerHTML = icon();
         }
     },
 
@@ -444,9 +433,7 @@ const DSM_Player = {
             this.waveData = new Uint8Array(this.analyser.frequencyBinCount);
 
             // Si Butterchurn esta cargado pero no inicializado (faltaba AudioContext), inicializar ahora
-            if (this.butterchurn && !this.bcReady) {
-                this.setupButterchurn();
-            }
+            DSM_Visualizer.onAudioContextReady();
         } catch (e) {
             // Si falla (ej: MediaElementSource ya conectado), no romper nada
             console.warn('DSM_Player: No se pudo crear AudioContext:', e.message);
@@ -477,310 +464,12 @@ const DSM_Player = {
         return this.waveData;
     },
 
-    // ===== BUTTERCHURN (MILKDROP VISUALIZER) =====
-    initButterchurn() {
-        // Verificar WebGL2 con canvas temporal
-        if (!this.canvasGL) return;
-        const testCanvas = document.createElement('canvas');
-        if (!testCanvas.getContext('webgl2')) {
-            console.warn('DSM_Player: WebGL2 no disponible, usando fallback de ondas');
-            this.markButterchurnUnavailable('webgl2 unavailable');
-            return;
-        }
-
-        // Cargar presets del pack base (window.base cargado via <script> tag)
-        if (!window.base || !window.base.default) {
-            console.warn('DSM_Player: Presets de Butterchurn no encontrados');
-            this.markButterchurnUnavailable('presets missing');
-            return;
-        }
-
-        const allPresets = window.base.default;
-        const allKeys = Object.keys(allPresets);
-        if (allKeys.length === 0) {
-            console.warn('DSM_Player: Ningun preset encontrado en el pack');
-            this.markButterchurnUnavailable('empty presets');
-            return;
-        }
-
-        // Ordenar: prioritarios primero (en orden), despues el resto alfabeticamente
-        const prioritySet = new Set(this.BC_PRIORITY_PRESETS);
-        const priorityKeys = this.BC_PRIORITY_PRESETS.filter(k => allPresets[k]);
-        const restKeys = allKeys.filter(k => !prioritySet.has(k)).sort();
-        this.bcPresetKeys = [...priorityKeys, ...restKeys];
-
-        this.bcPresets = {};
-        for (const key of this.bcPresetKeys) {
-            this.bcPresets[key] = allPresets[key];
-        }
-
-        // Butterchurn core se carga como ES module (deferred)
-        // Puede estar listo ya o llegar despues via evento 'butterchurn-ready'
-        if (window.butterchurn && typeof window.butterchurn.createVisualizer === 'function') {
-            this.butterchurn = window.butterchurn;
-            this.setupButterchurn();
-        } else {
-            window.addEventListener('butterchurn-ready', () => {
-                this.butterchurn = window.butterchurn;
-                this.setupButterchurn();
-            }, { once: true });
-        }
-    },
-
-    setupButterchurn() {
-        if (!this.butterchurn || !this.canvasGL || !this.audioCtx || !this.analyser) return;
-        if (this.bcReady) return; // Ya inicializado
-
-        // Usar tamaño fijo si el player esta oculto (getBoundingClientRect devuelve 0)
-        const rect = this.canvasGL.getBoundingClientRect();
-        let { w, h, pixelRatio } = this.getRenderSize(rect, { fullscreenBoost: this.isFullscreen });
-        // Fallback a tamaño razonable si el canvas no es visible aun
-        if (w === 0 || h === 0) {
-            w = 400; h = 400;
-            pixelRatio = 1;
-        }
-        this.canvasGL.width = w;
-        this.canvasGL.height = h;
-
-        try {
-            this.visualizer = this.butterchurn.createVisualizer(this.audioCtx, this.canvasGL, {
-                width: w,
-                height: h,
-                pixelRatio,
-                textureRatio: 1
-            });
-
-            // Conectar nuestro analyser existente
-            this.visualizer.connectAudio(this.analyser);
-
-            // Cargar primer preset — siempre empieza por el primero (castle in the air)
-            this.bcPresetIndex = 0;
-            this.visualizer.loadPreset(this.bcPresets[this.bcPresetKeys[0]], 0.0);
-
-            // Ocultar canvas 2D, mostrar WebGL
-            this.canvas.style.display = 'none';
-            this.canvasGL.style.display = 'block';
-            this.bcReady = true;
-            this.bcRecovering = false;
-            this.bcRenderFailCount = 0;
-
-            // Actualizar controles/nombre de preset con el estado real del visualizador
-            this.updateAutoCycleBtn();
-            this.updatePresetNavUI();
-
-            // Iniciar ciclo de presets
-            this.startPresetCycle();
-        } catch (err) {
-            console.warn('DSM_Player: Error inicializando Butterchurn:', err.message);
-            this.bcRecovering = false;
-            this.markButterchurnUnavailable('setup error');
-            this.scheduleButterchurnRecovery('setup error');
-        }
-    },
-
-    startPresetCycle() {
-        if (this.bcCycleInterval) clearInterval(this.bcCycleInterval);
-        this.bcCycleInterval = null;
-        if (!this.bcAutoCycle || this.bcPresetKeys.length <= 1) return;
-
-        this.bcCycleInterval = setInterval(() => {
-            if (!this.bcReady || !this.visualizer) return;
-            this.bcPresetIndex = (this.bcPresetIndex + 1) % this.bcPresetKeys.length;
-            this.visualizer.loadPreset(
-                this.bcPresets[this.bcPresetKeys[this.bcPresetIndex]],
-                this.BC_BLEND_SECONDS
-            );
-            this.updatePresetNavName();
-        }, this.BC_CYCLE_SECONDS * 1000);
-    },
-
-    toggleAutoCycle() {
-        this.bcAutoCycle = !this.bcAutoCycle;
-        if (this.bcAutoCycle) {
-            this.startPresetCycle();
-        } else {
-            if (this.bcCycleInterval) clearInterval(this.bcCycleInterval);
-            this.bcCycleInterval = null;
-        }
-        this.updateAutoCycleBtn();
-    },
-
-    updatePresetNavUI() {
-        const prevBtn = document.getElementById('preset-prev-btn');
-        const nextBtn = document.getElementById('preset-next-btn');
-        const cycleBtn = document.getElementById('preset-cycle-btn');
-        const nameEl = document.getElementById('preset-nav-name');
-        const controlsVisible = this.bcReady && this.bcPresetKeys.length > 0;
-
-        [prevBtn, nextBtn, cycleBtn].forEach((btn) => {
-            if (!btn) return;
-            btn.classList.toggle('hidden', !controlsVisible);
-            btn.disabled = !controlsVisible;
-            btn.setAttribute('aria-hidden', String(!controlsVisible));
-        });
-
-        if (!nameEl) return;
-        if (this.bcRecovering) {
-            nameEl.textContent = 'reconectando visual...';
-            return;
-        }
-        if (!controlsVisible) {
-            nameEl.textContent = 'visual base';
-            return;
-        }
-        nameEl.textContent = this.bcPresetKeys[this.bcPresetIndex] || '—';
-    },
-
-    updateAutoCycleBtn() {
-        const btn = document.getElementById('preset-cycle-btn');
-        if (!btn) return;
-        const actionLabel = this.bcAutoCycle ? 'pausar ciclo' : 'activar ciclo';
-        btn.innerHTML = this.bcAutoCycle
-            ? '<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>'
-            : '<svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-        btn.title = actionLabel;
-        btn.setAttribute('aria-label', actionLabel);
-    },
-
     scheduleRendererResize() {
         if (this.resizeRaf) return;
         this.resizeRaf = requestAnimationFrame(() => {
             this.resizeRaf = 0;
-            if (this.bcReady) this.resizeButterchurn();
+            DSM_Visualizer.onResize();
         });
-    },
-
-    updateAdaptiveQuality(now) {
-        if (!Number.isFinite(now)) return;
-        if (this.renderLastFrameTs > 0) {
-            const dt = now - this.renderLastFrameTs;
-            if (dt > 0 && dt < 1000) {
-                const fps = 1000 / dt;
-                this.renderFpsEma += (fps - this.renderFpsEma) * this.BC_ADAPTIVE_SMOOTHING;
-            }
-        }
-        this.renderLastFrameTs = now;
-
-        if (now - this.renderLastAdjustTs < this.BC_ADAPTIVE_COOLDOWN_MS) return;
-
-        let nextScale = this.renderQualityScale;
-        if (this.renderFpsEma < this.BC_ADAPTIVE_LOW_FPS && nextScale > this.BC_ADAPTIVE_MIN_SCALE) {
-            nextScale = Math.max(this.BC_ADAPTIVE_MIN_SCALE, nextScale - this.BC_ADAPTIVE_DOWNSHIFT);
-        } else if (this.renderFpsEma > this.BC_ADAPTIVE_HIGH_FPS && nextScale < 1) {
-            nextScale = Math.min(1, nextScale + this.BC_ADAPTIVE_UPSHIFT);
-        }
-
-        if (nextScale !== this.renderQualityScale) {
-            this.renderQualityScale = Number(nextScale.toFixed(3));
-            this.renderLastAdjustTs = now;
-            this.scheduleRendererResize();
-        }
-    },
-
-    markButterchurnUnavailable(reason) {
-        this.bcReady = false;
-        this.visualizer = null;
-        this.bcRenderFailCount = 0;
-        if (this.bcCycleInterval) clearInterval(this.bcCycleInterval);
-        this.bcCycleInterval = null;
-        if (this.canvasGL) this.canvasGL.style.display = 'none';
-        if (this.canvas) this.canvas.style.display = 'block';
-        this.updatePresetNavUI();
-        this.updateAutoCycleBtn();
-        if (reason) console.warn(`DSM_Player: Butterchurn desactivado (${reason})`);
-    },
-
-    scheduleButterchurnRecovery(reason = 'recovery') {
-        if (this.bcRecoveryTimeout) return;
-        const now = Date.now();
-        if (now - this.bcLastRecoveryAt < this.BC_RECOVERY_COOLDOWN_MS) return;
-
-        this.bcRecovering = true;
-        this.updatePresetNavUI();
-        this.bcRecoveryTimeout = setTimeout(() => {
-            this.bcRecoveryTimeout = null;
-            this.bcLastRecoveryAt = Date.now();
-
-            if (!this.playerEl || this.playerEl.classList.contains('hidden')) {
-                this.bcRecovering = false;
-                this.updatePresetNavUI();
-                return;
-            }
-            if (!this.butterchurn || !this.audioCtx || !this.analyser || !this.canvasGL) {
-                this.bcRecovering = false;
-                this.updatePresetNavUI();
-                return;
-            }
-            console.info(`DSM_Player: intentando recuperar Butterchurn (${reason})`);
-            this.setupButterchurn();
-        }, this.BC_RECOVERY_DELAY_MS);
-    },
-
-    getRenderSize(rect, { fullscreenBoost = false } = {}) {
-        const width = Math.max(0, rect.width || 0);
-        const height = Math.max(0, rect.height || 0);
-        if (width === 0 || height === 0) {
-            return { w: 0, h: 0, pixelRatio: 1 };
-        }
-        const baseDpr = window.devicePixelRatio || 1;
-        const adaptiveScale = Math.max(this.BC_ADAPTIVE_MIN_SCALE, Math.min(1, this.renderQualityScale || 1));
-
-        const dprTarget = fullscreenBoost
-            ? Math.min(baseDpr * this.BC_RENDER_BOOST_FULLSCREEN * adaptiveScale, this.BC_RENDER_DPR_MAX_FULLSCREEN)
-            : Math.min(baseDpr * adaptiveScale, this.BC_RENDER_DPR_MAX_WINDOWED);
-
-        let w = Math.round(width * dprTarget);
-        let h = Math.round(height * dprTarget);
-
-        const maxSide = fullscreenBoost
-            ? this.BC_RENDER_MAX_SIDE_FULLSCREEN
-            : this.BC_RENDER_MAX_SIDE_WINDOWED;
-        const longest = Math.max(w, h);
-        let effectiveDpr = dprTarget;
-
-        if (longest > maxSide) {
-            const scale = maxSide / longest;
-            w = Math.max(1, Math.round(w * scale));
-            h = Math.max(1, Math.round(h * scale));
-            effectiveDpr = dprTarget * scale;
-        }
-
-        return { w, h, pixelRatio: effectiveDpr };
-    },
-
-    resizeButterchurn() {
-        if (!this.visualizer || !this.canvasGL) return;
-        const rect = this.canvasGL.getBoundingClientRect();
-        const { w, h } = this.getRenderSize(rect, { fullscreenBoost: this.isFullscreen });
-        if (w === 0 || h === 0) return;
-        this.canvasGL.width = w;
-        this.canvasGL.height = h;
-        this.visualizer.setRendererSize(w, h);
-    },
-
-    // Cambiar al preset anterior (manual)
-    prevPreset() {
-        if (!this.bcReady || this.bcPresetKeys.length === 0) return;
-        this.bcPresetIndex = (this.bcPresetIndex - 1 + this.bcPresetKeys.length) % this.bcPresetKeys.length;
-        this.visualizer.loadPreset(this.bcPresets[this.bcPresetKeys[this.bcPresetIndex]], this.BC_BLEND_SECONDS);
-        this.updatePresetNavName();
-        // Reiniciar el ciclo automatico
-        this.startPresetCycle();
-    },
-
-    // Cambiar al preset siguiente (manual)
-    nextPreset() {
-        if (!this.bcReady || this.bcPresetKeys.length === 0) return;
-        this.bcPresetIndex = (this.bcPresetIndex + 1) % this.bcPresetKeys.length;
-        this.visualizer.loadPreset(this.bcPresets[this.bcPresetKeys[this.bcPresetIndex]], this.BC_BLEND_SECONDS);
-        this.updatePresetNavName();
-        // Reiniciar el ciclo automatico
-        this.startPresetCycle();
-    },
-
-    // Actualizar el nombre del preset en el navegador
-    updatePresetNavName() {
-        this.updatePresetNavUI();
     },
 
     // ===== FULLSCREEN (expande player a toda la ventana) =====
@@ -829,22 +518,25 @@ const DSM_Player = {
 
             this.fullscreenAnim.onfinish = () => {
                 this.fullscreenAnim = null;
-                if (this.bcReady) this.scheduleRendererResize();
+                if (DSM_Visualizer.isReady()) this.scheduleRendererResize();
             };
             this.fullscreenAnim.oncancel = () => { this.fullscreenAnim = null; };
         }
 
-        // Actualizar icono
+        // Actualizar icono: expandir <-> contraer (flechas hacia dentro, no una X)
         const btn = document.getElementById('fullscreen-btn');
-        if (btn) btn.textContent = this.isFullscreen ? '\u2716' : '\u26F6';
+        if (btn) {
+            btn.innerHTML = this.isFullscreen ? ICONS.fullscreenContract : ICONS.fullscreenExpand;
+            btn.setAttribute('aria-label', this.isFullscreen ? 'salir de pantalla completa' : 'fullscreen');
+        }
 
         // Resize Butterchurn al nuevo tamaño
-        if (this.bcReady) {
+        if (DSM_Visualizer.isReady()) {
             this.scheduleRendererResize();
         }
     },
 
-    // ===== AMBIENCE ANIMATION (reactivo al audio via AnalyserNode) =====
+    // ===== ANIMACION (delega en DSM_Visualizer/DSM_Ambience segun disponibilidad) =====
     animate() {
         if (!this.canvas && !this.canvasGL) return;
 
@@ -854,28 +546,17 @@ const DSM_Player = {
             return;
         }
 
-        this.updateAdaptiveQuality(performance.now());
+        DSM_Visualizer.updateAdaptiveQuality(performance.now());
 
         // Si Butterchurn esta listo, usarlo en vez de las ondas procedurales
-        if (this.bcReady && this.visualizer) {
-            try {
-                this.visualizer.render();
-                this.bcRenderFailCount = 0;
-            } catch (err) {
-                this.bcRenderFailCount += 1;
-                console.warn(`DSM_Player: render Butterchurn fallo (${this.bcRenderFailCount}/${this.BC_RENDER_FAIL_THRESHOLD}):`, err?.message || err);
-                if (this.bcRenderFailCount >= this.BC_RENDER_FAIL_THRESHOLD) {
-                    this.markButterchurnUnavailable('repeated render errors');
-                    this.scheduleButterchurnRecovery('render errors');
-                }
-            }
+        if (DSM_Visualizer.renderFrame()) {
             this.animationId = requestAnimationFrame(() => this.animate());
             return;
         }
 
         try {
             const rect = this.canvas.getBoundingClientRect();
-            const { w, h } = this.getRenderSize(rect, { fullscreenBoost: this.isFullscreen });
+            const { w, h } = DSM_Visualizer.getRenderSize(rect, { fullscreenBoost: this.isFullscreen });
             if (this.canvas.width !== w) this.canvas.width = w;
             if (this.canvas.height !== h) this.canvas.height = h;
             if (w === 0 || h === 0) {
@@ -883,87 +564,18 @@ const DSM_Player = {
                 return;
             }
 
-            const timeSec = (Date.now() - this.startTime) * 0.001;
-            const playing = this.isPlaying;
-            const s = this.ambience;
-
             // Leer datos de audio si el analyser esta disponible
             const energy = this.analyser ? this.getAudioEnergy() : 0;
-            const reactiveEnergy = Math.min(1, Math.pow(energy, 0.72) * 1.35);
             const waveform = this.getWaveform(); // null si no hay analyser
-            const hasAudio = this.analyser && playing && reactiveEnergy > 0.01;
 
-            // Trail fade (fondo semitransparente para efecto estela)
-            // Cuando hay audio reactivo, trail mas largo para efecto mas fluido
-            const trailBase = hasAudio ? 0.06 : 0.08;
-            const fade = trailBase + (1 - s.trail) * 0.15;
-            this.ctx.fillStyle = `rgba(0, 0, 0, ${fade})`;
-            this.ctx.fillRect(0, 0, w, h);
-
-            // Hue rotando con el tiempo — modulado por energia del audio
-            const hueSpeed = hasAudio ? (s.colorSpeed * 20 + reactiveEnergy * 70) : (s.colorSpeed * 20);
-            const hue = (s.hueShift + timeSec * hueSpeed) % 360;
-            const lines = Math.max(4, Math.round(s.lineCount));
-
-            // Amplitud: si hay analyser reactivo, modulada por energia del audio
-            // Si no hay analyser, fallback al comportamiento original (tiempo-basado)
-            const baseMul = playing ? 1.0 : 0.3;
-            let amplitude;
-            if (hasAudio) {
-                // Energia del audio controla la amplitud (0..1 mapeado a rango visual)
-                amplitude = Math.min(w, h) * 0.12 * s.amplitude * (0.45 + reactiveEnergy * 2.1);
-            } else {
-                amplitude = Math.min(w, h) * 0.12 * s.amplitude * (0.7 + 0.3 * baseMul);
-            }
-
-            const freq = 0.004 * s.frequency;
-            const animTime = timeSec * (playing ? 1.0 : 0.3);
-
-            this.ctx.save();
-            this.ctx.globalCompositeOperation = 'lighter';
-            // Linea mas gruesa cuando hay mucha energia
-            this.ctx.lineWidth = hasAudio ? (1.4 + reactiveEnergy * 1.8) : 1.4;
-
-            const waveLen = waveform ? waveform.length : 0;
-
-            for (let i = 0; i < lines; i++) {
-                const offset = (i / lines) * Math.PI * 2;
-                // Alpha modulada por energia
-                const alphaBase = (0.15 + s.glow * 0.25);
-                const alpha = hasAudio
-                    ? alphaBase * (0.5 + reactiveEnergy * 0.9)
-                    : alphaBase * (playing ? 1 : 0.5);
-                this.ctx.strokeStyle = `hsla(${(hue + i * 22) % 360}, 80%, 70%, ${alpha})`;
-                this.ctx.beginPath();
-
-                const steps = Math.ceil(w / 8);
-                for (let step = 0; step <= steps; step++) {
-                    const x = step * 8;
-                    // Onda base procedural (siempre presente)
-                    const wave = Math.sin(x * freq + animTime + offset);
-                    const ripple = Math.cos(x * freq * 0.7 - animTime * 0.8 + offset) * 0.4;
-
-                    // Modulacion con waveform real del audio
-                    let audioMod = 0;
-                    if (hasAudio && waveform && waveLen > 0) {
-                        // Mapear posicion x del canvas a posicion en el buffer de waveform
-                        const waveIdx = Math.min(waveLen - 1, Math.floor((step / steps) * waveLen));
-                        // waveData es 0..255 donde 128 es silencio
-                        audioMod = ((waveform[waveIdx] - 128) / 128) * reactiveEnergy;
-                    }
-
-                    const y = h * 0.5
-                        + (wave + ripple) * amplitude
-                        + audioMod * amplitude * 1.15
-                        + (i - lines / 2) * 12;
-
-                    if (x === 0) this.ctx.moveTo(x, y);
-                    else this.ctx.lineTo(x, y);
-                }
-                this.ctx.stroke();
-            }
-
-            this.ctx.restore();
+            DSM_Ambience.render(this.ctx, this.canvas, {
+                startTime: this.startTime,
+                isPlaying: this.isPlaying,
+                settings: this.ambience,
+                energy,
+                waveform,
+                hasAnalyser: !!this.analyser
+            });
         } catch (err) {
             console.warn('DSM_Player: render 2D fallo, reintentando siguiente frame:', err?.message || err);
         }
@@ -984,8 +596,10 @@ const DSM_Player = {
         document.querySelector('#audio-player .track-title').textContent = title || 'bgm';
         document.querySelector('#audio-player .track-project').textContent = project || '';
 
-        // Ruta directa (no relativa a proyecto)
-        this.element.src = path;
+        // Ruta directa (no relativa a proyecto) — resuelta contra la raiz del
+        // sitio: tras un pushState a /p/<slug>/ una ruta relativa sin mas se
+        // resolveria contra esa URL, no contra la raiz.
+        this.element.src = DSM_SHARED.assetUrl(path);
         this.show();
         this.renderPlaylistPanel();
 
@@ -1041,9 +655,9 @@ const DSM_Player = {
 
         // BGM usa ruta directa, playlists usan ruta relativa al proyecto
         if (this.isBgm) {
-            this.element.src = track.file;
+            this.element.src = DSM_SHARED.assetUrl(track.file);
         } else {
-            this.element.src = `./data/projects/${this.currentProjectSlug}/${track.file}`;
+            this.element.src = DSM_SHARED.assetUrl(`data/projects/${this.currentProjectSlug}/${track.file}`);
         }
         this.saveState();
         this.highlightPlaylistItem();
@@ -1065,9 +679,10 @@ const DSM_Player = {
 
     updatePlayButton() {
         const btn = document.getElementById('play-btn');
-        if (btn) btn.innerHTML = this.isPlaying
-            ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M6 19h4V5H6zm8-14v14h4V5z"/></svg>'
-            : '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+        if (btn) {
+            btn.innerHTML = this.isPlaying ? ICONS.pause(16) : ICONS.play(16);
+            btn.setAttribute('aria-label', this.isPlaying ? 'pausar' : 'reproducir');
+        }
     },
 
     playPrevious() {
@@ -1091,7 +706,7 @@ const DSM_Player = {
         if (!this.element.duration) return;
         const progress = (this.element.currentTime / this.element.duration) * 100;
         const bar = document.getElementById('progress-bar');
-        if (bar) bar.value = progress;
+        if (bar && !this.isSeeking) bar.value = progress;
         const cur = document.querySelector('#audio-player .time-current');
         if (cur) cur.textContent = this.formatTime(this.element.currentTime);
     },
@@ -1121,9 +736,18 @@ const DSM_Player = {
         container.innerHTML = '';
 
         this.currentPlaylist.forEach((track, i) => {
-            const item = document.createElement('div');
+            // Boton real: accesible por teclado (tab + enter)
+            const item = document.createElement('button');
+            item.type = 'button';
             item.className = 'playlist-item' + (i === this.currentIndex ? ' active' : '');
-            item.innerHTML = `<span class="pl-num">${i + 1}</span><span class="pl-name">${track.title}</span>`;
+            const num = document.createElement('span');
+            num.className = 'pl-num';
+            num.textContent = String(i + 1);
+            const name = document.createElement('span');
+            name.className = 'pl-name';
+            name.textContent = track.title;
+            item.appendChild(num);
+            item.appendChild(name);
             item.addEventListener('click', () => {
                 this.loadTrack(i);
                 if (this.isPlaying) this.element.play().catch(() => {});
@@ -1143,11 +767,9 @@ const DSM_Player = {
         if (this.playerEl) {
             this.playerEl.classList.remove('hidden');
             // Reintentar setup de Butterchurn si aun no esta listo
-            if (this.butterchurn && !this.bcReady) {
-                this.setupButterchurn();
-            }
+            DSM_Visualizer.onShow();
             // Resize al tamaño real ahora que es visible
-            if (this.bcReady) {
+            if (DSM_Visualizer.isReady()) {
                 this.scheduleRendererResize();
             }
         }
@@ -1191,7 +813,6 @@ const DSM_Player = {
             index: this.currentIndex,
             playing: this.isPlaying,
             time: this.element ? this.element.currentTime : 0,
-            volume: this.element ? this.element.volume : 0.7,
             isBgm: this.isBgm
         };
     },
@@ -1201,14 +822,13 @@ const DSM_Player = {
         sessionStorage.setItem('dsm_player_state', JSON.stringify(this._buildState()));
     },
 
-    restoreStateIfPlaying() {
+    restoreState() {
         const saved = sessionStorage.getItem('dsm_player_state');
         if (!saved) return false;
 
         try {
             const state = JSON.parse(saved);
             if (!state.playlist || state.playlist.length === 0) return false;
-            if (!state.playing) return false; // Solo restaurar si estaba reproduciendo
 
             this._restoring = true;
             this.ensureAudioContext();
@@ -1216,8 +836,8 @@ const DSM_Player = {
             this.currentPlaylist = state.playlist;
             this.currentProjectSlug = state.slug;
             this.currentIndex = state.index;
-            this.element.volume = state.volume ?? 0.7;
-            this.syncVolumeUI();
+            // El volumen NO viaja en el estado de sesion: init() ya lo aplico
+            // desde localStorage (dsm_volume), unica fuente de verdad.
             this.isBgm = !!state.isBgm;
             this.element.loop = this.isBgm;
 
@@ -1230,28 +850,44 @@ const DSM_Player = {
 
             // BGM usa ruta directa, playlists usan ruta relativa al proyecto
             if (this.isBgm) {
-                this.element.src = track.file;
+                this.element.src = DSM_SHARED.assetUrl(track.file);
             } else {
-                this.element.src = `./data/projects/${this.currentProjectSlug}/${track.file}`;
+                this.element.src = DSM_SHARED.assetUrl(`data/projects/${this.currentProjectSlug}/${track.file}`);
             }
 
             this.show();
             this.renderPlaylistPanel();
             this.highlightPlaylistItem();
 
+            // Si el audio guardado ya no carga (404, proyecto renombrado),
+            // loadedmetadata nunca dispara: liberar _restoring para que
+            // saveState() no quede bloqueado el resto de la sesion.
+            this.element.addEventListener('error', () => {
+                this._restoring = false;
+            }, { once: true });
+
             this.element.addEventListener('loadedmetadata', () => {
                 this.element.currentTime = state.time || 0;
+                if (!state.playing) {
+                    // Estaba en pausa: restaurar en pausa en el mismo punto, sin autoplay
+                    this.isPlaying = false;
+                    this.updatePlayButton();
+                    this._restoring = false;
+                    this.saveState();
+                    return;
+                }
                 this.element.play().then(() => {
                     this.isPlaying = true;
                     this.updatePlayButton();
                     this._restoring = false;
                     this.saveState();
                 }).catch(() => {
-                    // Autoplay bloqueado por browser — ocultar player
+                    // Autoplay bloqueado por browser — dejar el player visible en
+                    // pausa en el punto guardado para que un click lo reanude
                     this.isPlaying = false;
                     this.updatePlayButton();
                     this._restoring = false;
-                    if (this.playerEl) this.playerEl.classList.add('hidden');
+                    this.saveState();
                 });
             }, { once: true });
 
