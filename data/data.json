@@ -263,7 +263,7 @@
     {
       "slug": "BIFSC",
       "titulo_proyecto": "Berlin International Sound Design Competition (2025 Submission)",
-      "titulo_home": "BIFSC",
+      "titulo_home": "BIFSC25",
       "tipo": "audiovisual",
       "visible": true,
       "mostrarImagen": true,
@@ -288,6 +288,36 @@
       ],
       "creditos_fr": [
         "Refonte sonore pour le concours BIFSC 2025"
+      ]
+    },
+    {
+      "slug": "BIFSC2",
+      "titulo_proyecto": "Berlin International Sound Design Competition (2026 Submission)",
+      "titulo_home": "BIFSC26",
+      "tipo": "audiovisual",
+      "visible": true,
+      "mostrarImagen": true,
+      "principal": [
+        "https://youtu.be/ZhNsC_r2fr0"
+      ],
+      "texto1_es": [],
+      "texto1_en": [],
+      "texto1_fr": [],
+      "audio": [],
+      "texto2_es": [],
+      "texto2_en": [],
+      "texto2_fr": [],
+      "galeria": [
+        "BIFSC2_1.webp","BIFSC2_2.webp","BIFSC2.webp"
+      ],
+      "creditos_es": [
+        "Re-diseño de sonido para el concurso BIFSC de 2026"
+      ],
+      "creditos_en": [
+        "Sound redesign for the 2026 BIFSC competition"
+      ],
+      "creditos_fr": [
+        "Refonte sonore pour le concours BIFSC 2026"
       ]
     },
     {
