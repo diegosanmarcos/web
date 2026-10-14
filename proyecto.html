@@ -7,6 +7,9 @@
     <meta name="description" content="Proyecto de Diego San Marcos: musica, mezcla y trabajo sonoro/audiovisual.">
     <meta name="robots" content="index,follow,max-image-preview:large">
     <meta name="theme-color" content="#000000">
+    <!-- Evitar que el navegador aplique su "modo oscuro forzado" (Brave Night Mode, Chrome auto-dark) -->
+    <meta name="color-scheme" content="dark">
+    <meta name="darkreader-lock">
     <link rel="canonical" id="canonical-url" href="/">
 
     <meta property="og:type" content="article">
@@ -26,12 +29,15 @@
     <link rel="stylesheet" href="./styles.css">
     <link rel="stylesheet" href="./proyecto.css">
 </head>
-<body class="project-page">
-    <!-- Fondo dinamico -->
+<body>
+    <!-- Fondo dinamico (compartido por ambas vistas) -->
     <div id="background-container"></div>
 
-    <!-- Contenedor principal del proyecto -->
-    <main class="project-main">
+    <!-- Vista: home (grid de proyectos) -->
+    <main id="projects-container" class="dsm-hidden"></main>
+
+    <!-- Vista: proyecto -->
+    <main class="project-main dsm-hidden">
         <!-- Elemento principal (video o imagen) -->
         <section id="principal-section" class="project-section">
             <div id="principal-content" class="principal-container"></div>
@@ -73,8 +79,11 @@
         window.dispatchEvent(new Event('butterchurn-ready'));
     </script>
 
-    <script src="./shared.js"></script>
-    <script src="./player.js"></script>
-    <script src="./proyecto.js"></script>
+    <script src="./shared.js" defer></script>
+    <script src="./player-ambience.js" defer></script>
+    <script src="./player-butterchurn.js" defer></script>
+    <script src="./player.js" defer></script>
+    <script src="./seo-shared.js" defer></script>
+    <script type="module" src="./app.js"></script>
 </body>
 </html>

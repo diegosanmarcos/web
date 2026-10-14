@@ -7,30 +7,71 @@
     <meta name="description" content="Portfolio de Diego San Marcos: musica, mezcla, audio inmersivo y proyectos audiovisuales.">
     <meta name="robots" content="index,follow,max-image-preview:large">
     <meta name="theme-color" content="#000000">
-    <link rel="canonical" id="canonical-url" href="/">
+    <!-- Evitar que el navegador aplique su "modo oscuro forzado" (Brave Night Mode, Chrome auto-dark) -->
+    <meta name="color-scheme" content="dark">
+    <meta name="darkreader-lock">
+    <link rel="canonical" id="canonical-url" href="https://diegosanmarcos.com/">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Diego San Marcos">
     <meta property="og:title" content="diego san marcos">
     <meta property="og:description" content="Portfolio de Diego San Marcos: musica, mezcla, audio inmersivo y proyectos audiovisuales.">
-    <meta property="og:url" content="/" id="og-url">
-    <meta property="og:image" content="./data/icons/LOGO URL.png" id="og-image">
+    <!-- og:image/og:url deben ser URLs absolutas: los crawlers (WhatsApp,
+         Twitter) no ejecutan JS ni resuelven rutas relativas -->
+    <meta property="og:url" content="https://diegosanmarcos.com/" id="og-url">
+    <meta property="og:image" content="https://diegosanmarcos.com/data/icons/LOGO%20URL.png" id="og-image">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="diego san marcos">
     <meta name="twitter:description" content="Portfolio de Diego San Marcos: musica, mezcla, audio inmersivo y proyectos audiovisuales.">
-    <meta name="twitter:image" content="./data/icons/LOGO URL.png" id="twitter-image">
+    <meta name="twitter:image" content="https://diegosanmarcos.com/data/icons/LOGO%20URL.png" id="twitter-image">
 
     <script type="application/ld+json" id="home-json-ld">{"@context":"https://schema.org","@type":"WebSite","name":"Diego San Marcos","description":"Portfolio de Diego San Marcos: musica, mezcla, audio inmersivo y proyectos audiovisuales."}</script>
     <link rel="icon" type="image/png" href="./data/icons/LOGO URL.png">
     <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./proyecto.css">
 </head>
 <body>
-    <!-- Fondo dinamico -->
+    <!-- Fondo dinamico (compartido por ambas vistas) -->
     <div id="background-container"></div>
 
-    <!-- Contenedor principal de proyectos -->
-    <main id="projects-container"></main>
+    <!-- Vista: home (grid de proyectos) -->
+    <main id="projects-container" class="dsm-hidden"></main>
+
+    <!-- Vista: proyecto -->
+    <main class="project-main dsm-hidden">
+        <!-- Elemento principal (video o imagen) -->
+        <section id="principal-section" class="project-section">
+            <div id="principal-content" class="principal-container"></div>
+        </section>
+
+        <!-- Texto 1 -->
+        <section id="texto1-section" class="project-section">
+            <div id="texto1-content" class="text-content"></div>
+        </section>
+
+        <!-- Audios -->
+        <section id="audio-section" class="project-section">
+            <div id="audio-list" class="audio-list"></div>
+        </section>
+
+        <!-- Texto 2 -->
+        <section id="texto2-section" class="project-section">
+            <div id="texto2-content" class="text-content"></div>
+        </section>
+
+        <!-- Galeria -->
+        <section id="galeria-section" class="project-section">
+            <div id="galeria-content" class="gallery-grid"></div>
+        </section>
+
+        <!-- Creditos -->
+        <section id="creditos-section" class="project-section">
+            <div id="creditos-content" class="credits-content"></div>
+        </section>
+
+        <a href="https://meowrhino.studio" target="_blank" rel="noopener" class="studio-badge">meowrhino.studio</a>
+    </main>
 
     <!-- Butterchurn visualizer (Milkdrop WebGL) -->
     <script src="./vendor/butterchurn-presets/base.min.js" defer></script>
@@ -40,8 +81,11 @@
         window.dispatchEvent(new Event('butterchurn-ready'));
     </script>
 
-    <script src="./shared.js"></script>
-    <script src="./player.js"></script>
-    <script src="./app.js"></script>
+    <script src="./shared.js" defer></script>
+    <script src="./player-ambience.js" defer></script>
+    <script src="./player-butterchurn.js" defer></script>
+    <script src="./player.js" defer></script>
+    <script src="./seo-shared.js" defer></script>
+    <script type="module" src="./app.js"></script>
 </body>
 </html>

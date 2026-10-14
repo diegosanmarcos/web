@@ -3,6 +3,8 @@
 :root {
     --font-title: 'Fidelma', serif;
     --font-body: 'Gill Sans MT Light', 'Gill Sans', 'Gill Sans MT', sans-serif;
+    /* La pagina ya es oscura: evitar que el navegador fuerce su propio modo oscuro */
+    color-scheme: dark;
 }
 
 /* ===== RESET Y BASE ===== */
@@ -18,6 +20,12 @@ body {
     background: #000;
     color: #fff;
     min-height: 100vh;
+}
+
+/* ===== SPA: home y vista de proyecto conviven en el DOM (el player nunca se
+   destruye); solo una esta visible a la vez ===== */
+.dsm-hidden {
+    display: none !important;
 }
 
 /* ===== PAGE TRANSITIONS ===== */
@@ -102,11 +110,53 @@ body.page-exit {
 }
 
 /* ===== TILES DE PROYECTO (GLASSMORPHISM) ===== */
+/* Sin seleccion/arrastre nativo: evita el resaltado del navegador al arrastrar
+   ligeramente sobre un tile (la "linea amarilla" fantasma) */
+.project-card,
+.special-tile {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.project-card img,
+.special-tile img {
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
+/* Foco de teclado propio en lugar del anillo por defecto del navegador */
+.project-card:focus-visible,
+.special-tile:focus-visible {
+    outline: 1px solid rgba(255, 255, 255, 0.7);
+    outline-offset: -1px;
+}
+
+/* Foco de teclado visible en controles interactivos (menu, audio, player) */
+.menu-item:focus-visible,
+.menu-trigger:focus-visible,
+.audio-item:focus-visible,
+.playlist-item:focus-visible,
+.control-btn:focus-visible,
+.player-fullscreen:focus-visible,
+.player-close:focus-visible,
+.playlist-close:focus-visible,
+.preset-nav-btn:focus-visible,
+.preset-cycle-btn:focus-visible,
+#progress-bar:focus-visible,
+#volume-slider:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.85);
+    outline-offset: 2px;
+}
+
 .project-card {
     position: relative;
     border-radius: 0;
     overflow: hidden;
     cursor: pointer;
+    /* El tile es un <a>: sin subrayado ni color de enlace */
+    text-decoration: none;
+    color: inherit;
     transition: transform 0.15s ease, filter 0.15s ease, background 0.2s ease;
     animation: tileIn 0.3s ease both;
     backdrop-filter: blur(12px);
@@ -646,6 +696,12 @@ span.special-tile-icon.lang-icon {
 }
 
 .playlist-item {
+    /* Es un <button>: neutralizar estilos de user-agent */
+    background: none;
+    border: none;
+    font: inherit;
+    width: 100%;
+    text-align: left;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -779,9 +835,10 @@ span.special-tile-icon.lang-icon {
         left: 1rem;
     }
 
+    /* En proyecto solo bajamos un pelin la posicion; el tamano se mantiene en
+       180px porque a 120px los controles (titulo + subtitulo de 2 lineas +
+       barra + botones + tiempo) no caben y se salen por abajo. */
     .project-page #audio-player {
-        width: 120px;
-        height: 120px;
         bottom: 0.5rem;
         left: 0.5rem;
     }
