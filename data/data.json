@@ -525,7 +525,7 @@
       "titulo_proyecto": "Fiverr Remix Contest - Bolero de Ravel (Submission)",
       "titulo_home": "Bolero de Ravel Remix",
       "tipo": "musicaMezcla",
-      "visible": true,
+      "visible": false,
       "mostrarImagen": true,
       "principal": [],
       "texto1_es": [],
